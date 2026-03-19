@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: myapp-service
+  namespace: dev
+  labels:
+    app: myapp
+    type: backend
+
+spec:
+  type: ClusterIP
+  selector:
+    app: myapp
+    type: backend
+
+  ports:
+    - name: http
+      port: 80
+      targetPort: 5000
