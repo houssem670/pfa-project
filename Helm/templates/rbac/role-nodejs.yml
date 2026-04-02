@@ -1,0 +1,7 @@
+apiVersion: rbac.authorization.k8s.io/v1  # C’est un système qui permet de contrôler qui peut faire quoi dans Kubernetes.
+kind: Role
+metadata:
+  name: nodejs-role
+  namespace: {{ .Values.namespace }}
+rules:
+  {{- toYaml .Values.rbac.rules | nindent 2 }}           

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Products - Commercial App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo"><a href="products.html">🛍️ Commercial App</a></div>
+        <div class="nav-links">
+            <a href="products.html">Products</a>
+            <a href="cart.html">Cart 🛒</a>
+            <a href="orders.html">My Orders</a>
+            <span id="userEmail" class="user-info"></span>
+            <button onclick="logout()" class="logout-btn">Logout</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1>All Products</h1>
+        <div id="products" class="products-grid"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+        let token = localStorage.getItem('token');
+
+        // Check authentication
+        if (!token) {
+            window.location.href = 'login.html';
+        }
+
+        // Display user email
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            document.getElementById('userEmail').textContent = payload.email || payload.id;
+        } catch(e) {
+            console.log('Invalid token');
+        }
+
+        // Load products
+        loadProducts();
+
+        async function loadProducts() {
+            try {
+                const response = await fetch(`${API_URL}/products`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        localStorage.removeItem('token');
+                        window.location.href = 'login.html';
+                    }
+                    throw new Error('Failed to load products');
+                }
+                
+                const products = await response.json();
+                
+                if (products.length === 0) {
+                    document.getElementById('products').innerHTML = '<p style="text-align:center;">No products available yet. Check back later!</p>';
+                    return;
+                }
+                
+                const productsHtml = products.map(product => `
+                    <div class="product-card">
+                        <h3>${escapeHtml(product.name)}</h3>
+                        <p>${escapeHtml(product.description || 'No description')}</p>
+                        <div class="price">$${product.price}</div>
+                        <div class="stock">Stock: ${product.stock || product.countInStock || 0}</div>
+                        <button onclick="addToCart('${product._id}', '${escapeHtml(product.name)}', ${product.price})">
+                            Add to Cart
+                        </button>
+                    </div>
+                `).join('');
+                
+                document.getElementById('products').innerHTML = productsHtml;
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('products').innerHTML = '<p style="text-align:center; color:red;">Error loading products. Please try again.</p>';
+            }
+        }
+
+        function addToCart(id, name, price) {
+            let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            const existingItem = cart.find(item => item.product === id);
+            
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                cart.push({ product: id, name, price, quantity: 1 });
+            }
+            
+            localStorage.setItem('cart', JSON.stringify(cart));
+            alert(`${name} added to cart!`);
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('cart');
+            window.location.href = 'login.html';
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

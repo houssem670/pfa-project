@@ -1,0 +1,8 @@
+apiVersion: v2
+name: commercial-app
+description: A Helm chart for Node.js and MongoDB application
+
+type: application
+
+version: 0.1.0
+appVersion: "1.0"

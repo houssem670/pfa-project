@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.mongodb.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.mongodb.labels.app }}
+spec:
+  replicas: {{ .Values.mongodb.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.mongodb.labels.app }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.mongodb.labels.app }}
+    spec:
+      securityContext:
+        runAsNonRoot: {{ .Values.mongodb.podSecurityContext.runAsNonRoot }}
+        runAsUser: {{ .Values.mongodb.podSecurityContext.runAsUser }}
+        fsGroup: {{ .Values.mongodb.podSecurityContext.fsGroup }}
+      containers:
+        - name: {{ .Values.mongodb.name }}
+          image: {{ .Values.mongodb.image }}
+          ports:
+            - containerPort: {{ .Values.mongodb.port }}
+          volumeMounts:
+            - name: mongo-storage
+              mountPath: {{ .Values.mongodb.pvc.mountPath }}
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+          livenessProbe:
+            tcpSocket:
+              port: {{ .Values.mongodb.port }}
+            initialDelaySeconds: {{ .Values.mongodb.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.mongodb.livenessProbe.periodSeconds }}
+          readinessProbe:
+            tcpSocket:
+              port: {{ .Values.mongodb.port }}
+            initialDelaySeconds: {{ .Values.mongodb.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.mongodb.readinessProbe.periodSeconds }}
+      volumes:
+        - name: mongo-storage
+          persistentVolumeClaim:
+            claimName: {{ .Values.mongodb.pvc.name }}

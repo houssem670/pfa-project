@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders - Commercial App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo"><a href="products.html">🛍️ Commercial App</a></div>
+        <div class="nav-links">
+            <a href="products.html">Products</a>
+            <a href="cart.html">Cart 🛒</a>
+            <a href="orders.html">My Orders</a>
+            <span id="userEmail" class="user-info"></span>
+            <button onclick="logout()" class="logout-btn">Logout</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1>My Orders</h1>
+        <div id="orders"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000/api';
+        let token = localStorage.getItem('token');
+
+        if (!token) {
+            window.location.href = 'login.html';
+        }
+
+        // Display user email
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            document.getElementById('userEmail').textContent = payload.email || payload.id;
+        } catch(e) {
+            console.log('Invalid token');
+        }
+
+        loadOrders();
+
+        async function loadOrders() {
+            try {
+                const response = await fetch(`${API_URL}/orders/my`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        localStorage.removeItem('token');
+                        window.location.href = 'login.html';
+                    }
+                    throw new Error('Failed to load orders');
+                }
+                
+                const orders = await response.json();
+                console.log('Orders received:', orders); // Debug: check console
+                
+                if (!orders || orders.length === 0) {
+                    document.getElementById('orders').innerHTML = `
+                        <div class="alert alert-info">
+                            You haven't placed any orders yet. <a href="products.html">Start Shopping</a>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const ordersHtml = orders.map(order => {
+                    // Calculate total from items
+                    const total = order.items ? order.items.reduce((sum, item) => sum + (item.price * item.quantity), 0) : 0;
+                    
+                    return `
+                        <div class="order-card">
+                            <div class="order-header">
+                                <strong>Order ID: ${order._id}</strong>
+                                <span class="order-status">Status: ${order.status || 'Processing'}</span>
+                            </div>
+                            <div>Date: ${new Date(order.createdAt).toLocaleString()}</div>
+                            <div>Payment: ${order.paymentMethod || 'Not specified'}</div>
+                            ${order.shippingAddress ? `
+                                <div>Shipping: ${order.shippingAddress.address}, ${order.shippingAddress.city}, ${order.shippingAddress.country}</div>
+                            ` : ''}
+                            <div style="margin-top: 1rem;">
+                                <strong>Items:</strong>
+                                <ul>
+                                    ${order.items ? order.items.map(item => `
+                                        <li>${item.name} x ${item.quantity} = $${(item.price * item.quantity).toFixed(2)}</li>
+                                    `).join('') : 'No items'}
+                                </ul>
+                            </div>
+                            <div class="order-total">Total: $${total.toFixed(2)}</div>
+                        </div>
+                    `;
+                }).join('');
+                
+                document.getElementById('orders').innerHTML = ordersHtml;
+            } catch (error) {
+                console.error('Error loading orders:', error);
+                document.getElementById('orders').innerHTML = `
+                    <div class="alert alert-info" style="background-color: #f8d7da; color: #721c24;">
+                        Error loading orders. Please try again later.
+                        <br><br>
+                        <button onclick="loadOrders()" style="width: auto; background-color: #3498db;">Retry</button>
+                    </div>
+                `;
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('cart');
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>

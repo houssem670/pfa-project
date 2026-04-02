@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment-app
+  namespace: {{.Values.namespace}}
+  labels:
+    app: {{ .Values.nodejs.labels.app }}
+    type: {{  .Values.nodejs.labels.type }}
+
+spec:
+  replicas: {{ .Values.nodejs.replicas }}
+  selector:
+    matchLabels:
+      type: {{  .Values.nodejs.labels.type }}
+
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.nodejs.labels.app }}   
+        type: {{  .Values.nodejs.labels.type }}    
+
+    spec:
+      serviceAccountName: {{ .Values.nodejs.serviceAccountName }}
+      
+      securityContext:
+        runAsNonRoot: {{ .Values.nodejs.securityContext.runAsNonRoot }}
+        runAsUser: {{ .Values.nodejs.securityContext.runAsUser }}
+
+      containers:
+        - name: {{ .Values.nodejs.name }}
+          image: {{ .Values.nodejs.image }}
+          imagePullPolicy: {{ .Values.nodejs.imagePullPolicy }}
+
+          ports:
+            - containerPort: {{ .Values.nodejs.port }}
+
+          envFrom:
+            - configMapRef:
+                name: {{ .Values.nodejs.configmapName}}
+            - secretRef:
+                name: {{ .Values.nodejs.secretName }}
+
+          resources:
+            requests:
+              cpu: {{ .Values.nodejs.resources.requests.cpu }}
+              memory: {{ .Values.nodejs.resources.requests.memory }}
+            limits:
+              cpu: {{ .Values.nodejs.resources.limits.cpu }}
+              memory: {{ .Values.nodejs.resources.limits.memory }}
+
+          securityContext:
+            readOnlyRootFilesystem: {{ .Values.nodejs.containerSecurityContext.readOnlyRootFilesystem }}
+            capabilities:
+              drop:
+                - ALL
+
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.nodejs.livenessProbe.path }}
+              port: {{ .Values.nodejs.port }}
+            initialDelaySeconds: {{ .Values.nodejs.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.nodejs.livenessProbe.periodSeconds }}
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: {{ .Values.nodejs.readinessProbe.path }}
+              port: {{ .Values.nodejs.port }}
+            initialDelaySeconds: {{ .Values.nodejs.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.nodejs.readinessProbe.periodSeconds }}
+            failureThreshold: 3 

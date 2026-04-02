@@ -1,0 +1,10 @@
+[init]
+	defaultBranch = none
+[fetch]
+	recurseSubmodules = false
+[credential]
+	interactive = never
+[gc]
+	autoDetach = false
+[include]
+	path = /mnt/c/Users/asus/Desktop/Commercial_App/builds/kiwW_6a9Y/0/Houssemfk_25/project1.tmp/.gitlab-runner.ext.conf

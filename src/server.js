@@ -7,7 +7,7 @@ const connectDB = require("./config/db"); //importe la fonction qui gère la con
 
 connectDB(); //exécute la connexion au démarrage du serveur.
 
-const PORT = process.env.PORT || 4000; 
+const PORT = process.env.PORT || 5000; 
 
 
 // collect metrics system
@@ -16,7 +16,7 @@ client.collectDefaultMetrics()
 
 
 app.get('/', (req, res) => {
-  res.send('App is running 🚀');
+  res.send('App is running');
 });
 app.get('/metrics', async (req,res)=>{
   res.set('Content-Type', client.register.contentType)

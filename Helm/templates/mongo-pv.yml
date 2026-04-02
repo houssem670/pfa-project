@@ -1,0 +1,21 @@
+{{- if .Values.mongodb.pv.enabled }}
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Values.mongodb.pv.name }}
+
+spec:
+  capacity:
+    storage: {{ .Values.mongodb.pv.storage }}
+
+  accessModes:
+    - ReadWriteOnce
+
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: {{ .Values.mongodb.pv.storageClassName }}
+
+  hostPath:
+    path: {{ .Values.mongodb.pv.path }}
+
+{{- end }}

@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: myapp-service
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: {{ .Values.nodejs.labels.app }}
+    type: {{  .Values.nodejs.labels.type }}
+
+spec:
+  type: {{ .Values.nodejs.service.type }} 
+  selector:
+    app: {{ .Values.nodejs.labels.app }}
+    type: {{  .Values.nodejs.labels.type }}
+
+  ports:
+    - name: http
+      port: {{ .Values.nodejs.service.port }}
+      targetPort: {{ .Values.nodejs.port }}

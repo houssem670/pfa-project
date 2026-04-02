@@ -1,0 +1,22 @@
+{{- if .Values.networkPolicy.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-nodejs-to-mongodb
+  namespace: {{ .Values.namespace }}
+spec:
+  podSelector:
+    matchLabels:
+      app: {{ .Values.mongodb.labels.app | quote }}
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: {{ .Values.nodejs.labels.app | quote }}
+              type: {{ .Values.nodejs.labels.type | quote }}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.mongodb.port }}
+{{- end }}
