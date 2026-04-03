@@ -2,3 +2,5 @@ node_modules
 .env
 builds/
 .gitlab-runner/
+.runner_system_id
+config.toml
