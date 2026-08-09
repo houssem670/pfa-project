@@ -113,7 +113,6 @@
         return;
     }
     
-    // Get shipping details
     const address = prompt('Enter street address:');
     if (!address) { alert('Address is required!'); return; }
     
@@ -129,7 +128,6 @@
     const paymentMethod = prompt('Payment method (PayPal/Credit Card):');
     if (!paymentMethod) { alert('Payment method is required!'); return; }
     
-    // Format items correctly for your API - using "items" field
     const items = cart.map(item => ({
         product: item.product,
         name: item.name,
@@ -138,7 +136,7 @@
     }));
     
     const orderData = {
-        items: items,  // ← This is the key change! Use "items", not "orderItems"
+        items: items,  
         shippingAddress: {
             address: address,
             city: city,
